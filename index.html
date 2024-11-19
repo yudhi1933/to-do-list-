@@ -25,10 +25,9 @@
           <h3 class="font-bold text-center text-lg">Tindakan</h3>
         </div>
         <div id="kolomContainer"></div>
-        <div>
-          <div id="berhasilDiTambah" class="bg-slate-100 mt-36 hidden mb-10">
-            <h4 class="font-bold text-center text-lg p-4 border-2 border-solid border-slate-400">Tugas Behasil Ditambahkan</h4>
-          </div>
+        <div class="bg-slate-100 mt-36">
+          <h4 class="font-bold text-center text-lg p-4 border-2 border-solid border-slate-400">Tugas Behasil Ditambahkan</h4>
+          <div id="berhasilDiTambah" class="bg-slate-100"></div>
         </div>
       </div>
     </section>
@@ -36,54 +35,72 @@
       // Ambil elemen tombol dan container kolom
       const tambahKolomBtn = document.getElementById("tambahKolomBtn");
       const kolomContainer = document.getElementById("kolomContainer");
+      const kolomBerhasilDitambah = document.getElementById("berhasilDiTambah");
       const inputField = document.getElementById("inputField");
+      const dataList = [];
+      const formatList = { id: 0, status: "false|true", text: "ini text nya" };
+      var id = 0;
 
+      function refreshElementHtml() {
+        // bersihkan kolomContainer dan
+        // kolomContainer.innerHTML = ""
+        // kolomBerhasilDitambah.innerHTML = ""
+        while (kolomContainer.firstChild) {
+          kolomContainer.removeChild(kolomContainer.firstChild);
+        }
+        // kolomBerhasilDitambah.innerHTML = ""
+        while (kolomBerhasilDitambah.firstChild) {
+          kolomBerhasilDitambah.removeChild(kolomBerhasilDitambah.firstChild);
+        }
+        dataList.forEach((item, index) => {
+          const kolomBaru = addKolumBaru(item.id, item.text, item.status);
+          if (item.status === false) {
+            kolomContainer.appendChild(kolomBaru);
+          }
+          console.log(item.status);
+          if (item.status === true) {
+            // kolomBerhasilDitambah.remove("hidden");
+            kolomBerhasilDitambah.appendChild(kolomBaru);
+            // console.log(kolomBerhasilDitambah);
+          }
+        });
+      }
+      function addKolumBaru(id, text, status) {
+        const kolomBaru = document.createElement("div");
+        kolomBaru.classList.add("bg-white", "p-4", "border-t-0", "border-2", "border-slate-400", "flex", "justify-between", "items-center", "text-xl");
 
-      // Fungsi untuk menambah kolom
-      function tambahKolom() {
-        // Ambil nilai input dan hilangkan spasi di awal/akhir
-        const inputValue = inputField.value.trim();
+        // Tambahkan konten di dalam kolom baru
+        const kolomText = document.createElement("span");
+        kolomText.textContent = text;
+        kolomBaru.appendChild(kolomText);
 
-        // Cek apakah input tidak kosong
-        if (inputValue !== "") {
-          // Buat kolom baru
-          const kolomBaru = document.createElement("div");
-          kolomBaru.classList.add("bg-white", "p-4", "border-t-0", "border-2", "border-slate-400", "flex", "justify-between", "items-center", "text-xl");
+        // Buat container untuk ikon
+        const iconContainer = document.createElement("div");
+        iconContainer.classList.add("flex", "gap-2"); // Tambahkan flex untuk ik
 
-          // Tambahkan konten di dalam kolom baru
-          const kolomText = document.createElement("span");
-          kolomText.textContent = inputValue;
-          kolomBaru.appendChild(kolomText);
-
-          // Buat container untuk ikon
-          const iconContainer = document.createElement("div");
-          iconContainer.classList.add("flex", "gap-2"); // Tambahkan flex untuk ik
-
+        if (!status) {
           const completeIcon = document.createElement("i");
           completeIcon.classList.add("fas", "fa-check", "cursor-pointer", "text-green-500");
           completeIcon.style.fontSize = "1.5rem";
-
+  
           // Event listener untuk ikon Complete
           completeIcon.addEventListener("click", function handleCompleteClick() {
+            completeIcon.remove()
             // Tandai elemen sebagai selesai
             kolomBaru.classList.add("bg-green-100"); // Tandai elemen sebagai selesai
-            tambahKolomLagi(inputValue);
-
+            // tambahKolomLagi(inputValue);
+            // console.log(id)
+            // console.log(dataList.findIndex((item) => item.id === id));
+            dataList[dataList.findIndex((item) => item.id === id)].status = true;
+            console.log(dataList);
+  
+            refreshElementHtml();
+  
             // Nonaktifkan klik lebih lanjut dengan menghapus event listener
             completeIcon.removeEventListener("click", handleCompleteClick);
           });
 
-          // Buat tombol "Delete" dan tambahkan ke kolomBaru
-          const deleteIcon = document.createElement("i");
-          deleteIcon.classList.add("fas", "fa-trash", "cursor-pointer");
-          deleteIcon.style.fontSize = "1.5rem";
-
-          // Event listener untuk menghapus kolomBaru ketika tombol "Delete" diklik
-          deleteIcon.addEventListener("click", () => {
-            kolomBaru.remove();
-          });
-
-          // Buat ikon edit
+            // Buat ikon edit
           const editIcon = document.createElement("i");
           editIcon.classList.add("fas", "fa-edit", "cursor-pointer");
           editIcon.style.fontSize = "1.5rem";
@@ -93,80 +110,172 @@
             const newText = prompt("Tulis teks baru:", kolomText.textContent);
             if (newText !== null && newText.trim() !== "") {
               kolomText.textContent = newText.trim(); // Update teks
+              dataList[dataList.findIndex((item) => item.id === id)].text = newText.trim();
             }
           });
 
+          
           // Tambahkan ikon ke dalam container ikon
           iconContainer.appendChild(completeIcon);
           iconContainer.appendChild(editIcon);
-          iconContainer.appendChild(deleteIcon);
+        }
+        // Buat tombol "Delete" dan tambahkan ke kolomBaru
+        const deleteIcon = document.createElement("i");
+        deleteIcon.classList.add("fas", "fa-trash", "cursor-pointer");
+        deleteIcon.style.fontSize = "1.5rem";
+        
+        // Event listener untuk menghapus kolomBaru ketika tombol "Delete" diklik
+        deleteIcon.addEventListener("click", () => {
+          console.log("clik clik", dataList)
+          const indexItem = dataList.findIndex((item) => item.id === id)
+          dataList.splice(indexItem, 1)
+          refreshElementHtml()
+        });
+        
+        iconContainer.appendChild(deleteIcon);
 
-          // Tambahkan container ikon ke kolom baru
-          kolomBaru.appendChild(iconContainer);
+        // Tambahkan container ikon ke kolom baru
+        kolomBaru.appendChild(iconContainer);
 
-          // Tambahkan kolom baru ke dalam container
-          kolomContainer.prepend(kolomBaru);
+        return kolomBaru;
+      }
+      // Fungsi untuk menambah kolom
+      function tambahKolom() {
+        // Ambil nilai input dan hilangkan spasi di awal/akhir
+        const inputValue = inputField.value.trim();
 
-          // Kosongkan input field setelah menambahkan kolom
-          inputField.value = "";
+        // Cek apakah input tidak kosong
+        if (inputValue !== "") {
+          // Buat kolom baru
+          const dataBaru = { ...formatList, status: false, text: inputValue, id: id };
+          // dataBaru.status = "false";
+          // dataBaru.text = inputValue;
+          dataBaru.id = id;
+          id++;
+          dataList.push(dataBaru);
+          console.log(dataList);
+          refreshElementHtml();
+          // const kolomBaru = document.createElement("div");
+          // kolomBaru.classList.add("bg-white", "p-4", "border-t-0", "border-2", "border-slate-400", "flex", "justify-between", "items-center", "text-xl");
+
+          // // Tambahkan konten di dalam kolom baru
+          // const kolomText = document.createElement("span");
+          // kolomText.textContent = inputValue;
+          // kolomBaru.appendChild(kolomText);
+
+          // // Buat container untuk ikon
+          // const iconContainer = document.createElement("div");
+          // iconContainer.classList.add("flex", "gap-2"); // Tambahkan flex untuk ik
+
+          // const completeIcon = document.createElement("i");
+          // completeIcon.classList.add("fas", "fa-check", "cursor-pointer", "text-green-500");
+          // completeIcon.style.fontSize = "1.5rem";
+
+          // // Event listener untuk ikon Complete
+          // completeIcon.addEventListener("click", function handleCompleteClick() {
+          //   // Tandai elemen sebagai selesai
+          //   kolomBaru.classList.add("bg-green-100"); // Tandai elemen sebagai selesai
+          //   tambahKolomLagi(inputValue);
+
+          //   // Nonaktifkan klik lebih lanjut dengan menghapus event listener
+          //   completeIcon.removeEventListener("click", handleCompleteClick);
+          // });
+
+          // // Buat tombol "Delete" dan tambahkan ke kolomBaru
+          // const deleteIcon = document.createElement("i");
+          // deleteIcon.classList.add("fas", "fa-trash", "cursor-pointer");
+          // deleteIcon.style.fontSize = "1.5rem";
+
+          // // Event listener untuk menghapus kolomBaru ketika tombol "Delete" diklik
+          // deleteIcon.addEventListener("click", () => {
+          //   kolomBaru.remove();
+          // });
+
+          // // Buat ikon edit
+          // const editIcon = document.createElement("i");
+          // editIcon.classList.add("fas", "fa-edit", "cursor-pointer");
+          // editIcon.style.fontSize = "1.5rem";
+
+          // // Event listener untuk ikon edit
+          // editIcon.addEventListener("click", () => {
+          //   const newText = prompt("Tulis teks baru:", kolomText.textContent);
+          //   if (newText !== null && newText.trim() !== "") {
+          //     kolomText.textContent = newText.trim(); // Update teks
+          //   }
+          // });
+
+          // // Tambahkan ikon ke dalam container ikon
+          // iconContainer.appendChild(completeIcon);
+          // iconContainer.appendChild(editIcon);
+          // iconContainer.appendChild(deleteIcon);
+
+          // // Tambahkan container ikon ke kolom baru
+          // kolomBaru.appendChild(iconContainer);
+
+          // // Tambahkan kolom baru ke dalam container
+          // kolomContainer.prepend(kolomBaru);
+
+          // // Kosongkan input field setelah menambahkan kolom
+          // inputField.value = "";
         } else {
           // Jika input kosong, beri tahu pengguna
           alert("Masukkan teks terlebih dahulu.");
         }
-
-        function tambahKolomLagi(inputValue) {
-          // Ambil elemen dengan ID "berhasilDitambah"
-          const message = document.getElementById("berhasilDiTambah");
-
-          // Pastikan elemen message ditemukan
-          if (message) {
-            // Jika inputValue kosong, sembunyikan elemen
-            if (!inputValue.trim()) {
-              message.classList.add("hidden");
-              return; // Hentikan fungsi
-            }
-
-            // Tampilkan elemen dengan menghapus kelas "hidden"
-            message.classList.remove("hidden");
-
-            const kolomBaruBawah = document.createElement("div");
-            kolomBaruBawah.classList.add("kolom-bawah", "bg-white", "p-4", "border-t-0", "border-2", "border-slate-400", "flex", "justify-between", "items-center");
-            kolomBaruBawah.textContent = inputValue;
-
-            const deleteIcon = document.createElement("i");
-            deleteIcon.classList.add("fas", "fa-times", "cursor-pointer", "text-red-500");
-            deleteIcon.style.fontSize = "1.5rem";
-
-            // Event listener untuk menghapus kolomBaru ketika tombol "Delete" diklik
-            deleteIcon.addEventListener("click", () => {
-              kolomBaruBawah.remove();
-
-              // Periksa apakah masih ada kolom dinamis yang tersisa
-              const kolomTersisa = message.querySelectorAll(".kolom-bawah");
-              if (kolomTersisa.length === 0) {
-                message.classList.add("hidden"); // Sembunyikan elemen jika tidak ada kolom tersisa
-              }
-              // Reset ikon Complete agar bisa digunakan kembali
-              completeIcon.addEventListener("click", function handleCompleteClick() {
-                kolomBaru.classList.add("bg-green-100"); // Tandai elemen sebagai selesai
-                tambahKolomLagi(inputValue);
-                completeIcon.removeEventListener("click", handleCompleteClick);
-              });
-            });
-
-            // Tambahkan ikon delete ke dalam elemen baru
-            kolomBaruBawah.appendChild(deleteIcon);
-
-            // Tambahkan teks baru
-            message.appendChild(kolomBaruBawah);
-
-          } else {
-            console.error("Elemen dengan ID 'berhasilDitambah' tidak ditemukan.");
-          }
-        }
-
         // Update jumlah kolom, misalnya untuk debugging
         console.log(`Jumlah kolom: ${kolomContainer.children.length}`);
+      }
+
+      // function handleCompleteClick(e) {
+
+      // }
+      function tambahKolomLagi(inputValue) {
+        // Ambil elemen dengan ID "berhasilDitambah"
+        const message = document.getElementById("berhasilDiTambah");
+
+        // Pastikan elemen message ditemukan
+        if (message) {
+          // Jika inputValue kosong, sembunyikan elemen
+          if (!inputValue.trim()) {
+            message.classList.add("hidden");
+            return; // Hentikan fungsi
+          }
+
+          // Tampilkan elemen dengan menghapus kelas "hidden"
+          message.classList.remove("hidden");
+
+          const kolomBaruBawah = document.createElement("div");
+          kolomBaruBawah.classList.add("kolom-bawah", "bg-white", "p-4", "border-t-0", "border-2", "border-slate-400", "flex", "justify-between", "items-center");
+          kolomBaruBawah.textContent = inputValue;
+
+          const deleteIcon = document.createElement("i");
+          deleteIcon.classList.add("fas", "fa-times", "cursor-pointer", "text-red-500");
+          deleteIcon.style.fontSize = "1.5rem";
+
+          // Event listener untuk menghapus kolomBaru ketika tombol "Delete" diklik
+          deleteIcon.addEventListener("click", () => {
+            kolomBaruBawah.remove();
+
+            // Periksa apakah masih ada kolom dinamis yang tersisa
+            const kolomTersisa = message.querySelectorAll(".kolom-bawah");
+            if (kolomTersisa.length === 0) {
+              message.classList.add("hidden"); // Sembunyikan elemen jika tidak ada kolom tersisa
+            }
+            // Reset ikon Complete agar bisa digunakan kembali
+            completeIcon.addEventListener("click", function handleCompleteClick() {
+              kolomBaru.classList.add("bg-green-100"); // Tandai elemen sebagai selesai
+              tambahKolomLagi(inputValue);
+              completeIcon.removeEventListener("click", handleCompleteClick);
+            });
+          });
+
+          // Tambahkan ikon delete ke dalam elemen baru
+          kolomBaruBawah.appendChild(deleteIcon);
+
+          // Tambahkan teks baru
+          message.appendChild(kolomBaruBawah);
+        } else {
+          console.error("Elemen dengan ID 'berhasilDitambah' tidak ditemukan.");
+        }
       }
       // Event listener untuk tombol klik
       tambahKolomBtn.addEventListener("click", tambahKolom);
