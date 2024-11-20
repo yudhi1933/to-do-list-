@@ -285,6 +285,7 @@
         if (event.key === "Enter") {
           event.preventDefault(); // Mencegah form submit jika ada
           tambahKolom(); // Panggil fungsi tambahKolom
+          inputField.value = ""; // Kosongkan input
         }
       });
     </script>
